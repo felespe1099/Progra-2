@@ -4,22 +4,20 @@
 #define Nodo struct nodo
 #define Arista struct arista
 #define Lista struct pila
-#define TAMANO 100
+#define TAMANO 500
 
 Nodo{
     char lugar[TAMANO];
     char provincia[TAMANO];
-    int poblacion;
+    char anterior[TAMANO];
+    int visitado,terminado, monto, poblacion;
     Nodo* siguiente;
     Arista* adyacencia;
-    int visitado,terminado;
-    int monto;
-    char anterior[TAMANO];
 };
 
 Arista{
     Nodo*vrt;
-    Nodo*ady;
+    Nodo*adyacencia;
     Arista*siguiente;
     int peso;
     int tiempo;
@@ -39,13 +37,14 @@ void agregarArista(Nodo*aux,Nodo*aux2,Arista*nuevo);
 void insertarArista();
 void visualizarGrafo();
 void insertarPila(Nodo* aux);
-Nodo*desencolar();
 void reiniciar();
 void simulacion_Vehiculo_Taxi();
-int configuracion_Inicial();
 void eliminacion();
-void eliminarArista(Nodo*origen, Nodo* destino);
+void eliminarLugar();
+void eliminarAristas();
 void eliminarVertice(Nodo *vert);
+int configuracion_Inicial();
+Nodo*desencolar();
 
 int main(){
     int opcion;
@@ -58,21 +57,23 @@ int main(){
         printf(" 5. Mostrar Listas                   \n");
         printf(" 6. Recorrer Grafo                   \n");
         printf(" 7. Simulaciones                     \n");
-        printf(" 8. Salir                            \n");
+        printf(" 8. Analisis de datos                \n");
+        printf(" 9. Salir                            \n");
         printf("-------------------------------------\n");
         printf("Escoge opcion: ");
         scanf("%d",&opcion);
 
         if(opcion==1){insertarNodo();}
         else if (opcion==2){insertarArista();}
-        else if (opcion==3){eliminacion();}
-        else if (opcion==4){eliminador();}
-        else if (opcion==5){visualizarGrafo();}
+        else if (opcion==3){eliminarAristas();}
+        else if (opcion==4){ eliminarLugar();}
+        else if (opcion==5){ visualizarGrafo();}
         else if (opcion==6){ return 1;}
-        else if (opcion==7){configuracion_Inicial();}
+        else if (opcion==7){ configuracion_Inicial();}
         else if (opcion==8){ return 1;}
+        else if (opcion==9){ return 1;}
 
-    }while(opcion<=9);
+    }while(opcion<=10);
 
 
 
@@ -114,12 +115,12 @@ void insertarArista(){
     Nodo* aux2;
     if(inicio==NULL){
         printf("\n--------------------------\n");
-        printf("\nError: El grafo esta vacio\n");
+        printf("\nError: No hay lugares registrados\n");
         printf("\n--------------------------\n");
         return;
     }
     fflush(stdin);
-    printf("\nIngresar Lugar Inicial y Final:");
+    printf("\nIngresar lugar inicial y final:");
     scanf("%s %s",&ini,&fin);
     printf("\nIngresar la distancia entre ambos lugares:");
     scanf("%i",&nuevo->peso);
@@ -163,6 +164,132 @@ void agregarArista(Nodo* aux,Nodo* aux2,Arista* nuevo){
             a=a->siguiente;
         nuevo->vrt=aux2;
         a->siguiente=nuevo;
+    }
+}
+
+void eliminarAristas(){
+    char p;
+    Nodo*aux,*aux2;
+    p = (Arista*)malloc(sizeof(Arista));
+    char principio[TAMANO], meta[TAMANO];
+    Arista *q,*r;
+    printf("Ingrese el lugar de inicio: ");
+    scanf("%s", &principio);
+    printf("Ingrese el lugar de destino: ");
+    scanf("%s", &meta);
+    aux = p;
+    aux2 =p;
+    while(aux2!=NULL){
+        if(strcmp(aux2->lugar, meta)==0){
+               break;
+        }
+        else{
+            aux2=aux2->siguiente;
+        }
+    }
+    while(aux!=NULL){
+        if(strcmp(aux->lugar,principio)==0){
+            q=aux->adyacencia;
+            while(q!=NULL){
+                if(strcmp(q->vrt,aux2)==0){
+                   if(strcmp(q, aux->adyacencia)==0){
+                    aux->adyacencia= aux->adyacencia->siguiente;
+                   }
+                   else{
+                    r->siguiente=q->siguiente;
+                   }
+                   free(q);
+                   printf("La ruta ha sido eliminada");
+                   return;
+                }
+            }
+            r=q;
+            q=q->siguiente;
+        }
+        aux=aux->siguiente;
+    }
+}
+
+void vaciarArista(Nodo*aux){
+    Arista*q,*r;
+    q= aux->adyacencia;
+    while(q->siguiente!=NULL){
+        r = q;
+        q = q->siguiente;
+        free(r);
+    }
+}
+
+void eliminarLugar(){
+    char p;
+    char var[TAMANO];
+    Nodo* aux, *ant;
+    p = (Nodo*)malloc(sizeof(Nodo));
+    aux = p;
+    if(p==NULL){
+        printf("---------------------------------------\n");
+        printf("Ningun lugar no ha sido registrado, aun\n");
+        printf("---------------------------------------\n");
+        return;
+    }
+    printf("Ingrese el lugar que desea eliminar: ");
+    scanf("%s", &var);
+    while(aux!=NULL){
+        if(strcmp(aux->lugar,var)==0){
+            if(aux->adyacencia!=NULL){
+                vaciarArista(aux);
+            }
+            if(strcmp(aux->lugar,p)==0){
+                p=p->siguiente;
+                free(aux);
+                printf("El lugar ha sido eliminado");
+                return;
+            }
+            else{
+                ant->siguiente=aux->siguiente;
+                free(aux);
+                printf("El lugar ha sido eliminado");
+                return;
+            }
+        }
+        else{
+            ant=aux;
+            aux=aux->siguiente;
+        }
+    }
+}
+
+void eliminarArista(Nodo* origen, Nodo* destino){
+    int band = 0;
+    Arista*actual, *anterior;
+    actual = origen->adyacencia;
+    if (actual==NULL){
+        printf("\n---------------------\n");
+        printf("\nNo se encuentra ninguna ruta registrada   \n");
+        printf("\n---------------------\n");
+        return;
+    }
+    else if(strcmp(actual->adyacencia,destino)==0){
+        origen->adyacencia = origen->siguiente;
+        free(actual);
+    }
+    else{
+        while(actual!=NULL){
+            if(strcmp(actual->adyacencia,destino)==0){
+                band =1;
+                anterior->siguiente = actual->siguiente;
+                free(actual);
+                break;
+            }
+            anterior=actual;
+            actual=actual->siguiente;
+        }
+        if (band==0){
+            printf("\n---------------------\n");
+            printf("\No existe conexion entre esos dos lugares\n");
+            printf("\n---------------------\n");
+            return;
+        }
     }
 }
 
@@ -250,12 +377,13 @@ void simulacion_Vehiculo_Taxi(int maxPasajeros){
             aux->terminado=1;
             aux->monto=0;
             break;
+
         }
         aux=aux->siguiente;
     }
     if(aux==NULL){
         printf("\n---------------------\n");
-        printf("\nAlguno de los lugares no ha sido registrado aun\n");
+        printf("\nAlguno de los lugares no ha sido registrado, aun\n");
         printf("\n---------------------\n");
         return;
     }
@@ -384,98 +512,6 @@ void simulacion_Bus_Tren(int maxPasajeros){
     reiniciar();
 }
 
-void eliminacion()
-{
-    char comienzo;
-    char terminacion;
-    printf("Digite el lugar de inicio: ");
-    scanf("%s", &comienzo);
-    printf("Digite el lugar de destino: ");
-    scanf("%s", &terminacion);
-    return eliminarArista(&comienzo, &terminacion);
-}
-
-void eliminarArista(Nodo* origen, Nodo* destino){
-    int band = 0;
-    Nodo*actual, *anterior;
-    actual = origen->adyacencia;
-    if (actual==NULL){
-        printf("\n---------------------\n");
-        printf("\nNo se encuentra ninguna ruta registrada   \n");
-        printf("\n---------------------\n");
-        return;
-    }
-    else if(actual->adyacencia == destino){
-        origen->adyacencia = origen->siguiente;
-        free(actual);
-    }
-    else{
-        while(actual!=NULL){
-            if(actual->adyacencia==destino){
-                band =1;
-                anterior->siguiente = actual->siguiente;
-                free(actual);
-                break;
-            }
-            anterior=actual;
-            actual=actual->siguiente;
-        }
-        if (band==0){
-            printf("\n---------------------\n");
-            printf("\No existe conexion entre esos dos lugares\n");
-            printf("\n---------------------\n");
-            return;
-        }
-    }
-}
-
-void eliminador()
-{
-    char borrador;
-    printf("Indique el lugar que desea eliminar: ");
-    scanf("%s", &borrador);
-    return  eliminarVertice(&borrador);
-}
-
-void eliminarVertice(Nodo *vert){
-
-    Nodo *actual, *anterior, *h;
-    Arista* aux;
-    actual = h;
-    if (actual==NULL)
-    {
-        printf("\n---------------------\n");
-        printf("\No existe registro de ese lugar\n");
-        printf("\n---------------------\n");
-        return;
-    }
-    while(actual!=NULL){
-        aux = actual->adyacencia;
-        while (aux!=NULL){
-            if (strcmp(aux->ady,vert)){
-                eliminarArista(actual, aux->ady);
-                break;
-            }
-            aux = aux->siguiente;
-        }
-        actual = actual->siguiente;
-    }
-    actual = h;
-    if(strcmp(h,vert)){
-        h = h->siguiente;
-        free(h);
-    }
-    else{
-        while(actual!=vert){
-            anterior = actual;
-            actual = actual->siguiente;
-        }
-        anterior->siguiente = actual->siguiente;
-        free(actual);
-    }
-}
-
-
 int configuracion_Inicial(){
     int opcion, maxPasajeros, numSimulaciones;
     printf("\n[1]Tren\n[2]Bus\n[3]Taxi\n[4]Vehiculo personal\nElija el metodo de transporte: ");
@@ -493,3 +529,8 @@ int configuracion_Inicial(){
     }
     return 0;
 }
+
+/*void estadisticas1(int numpasajeros){
+    int trentiempo[&numsimulaciones];
+
+}*/
